@@ -1,0 +1,14 @@
+[unit]
+Description=ara
+After=network.target
+
+[Service]
+Type=simple
+TimeoutStartSec=0
+Restart=on-failure
+RestartSec=10
+RemainAfterExit=yes
+ExecStart=/usr/bin/ara-manage runserver -h {{ ara_host }} -p {{ ara_port }}
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,5 @@
+---
+
+ara_host: localhost
+ara_port: 9091
+config_path: ~/ansible.cfg

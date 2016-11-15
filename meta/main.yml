@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  author: Naga Ravi Chaitanya Elluri
+  description: Installs ara
+  company: redhat
+  license: BSD
+  min_ansible_version: 2.1
+  platforms:
+  - name: EL
+    versions:
+    - all
+  - name: Fedora
+    versions:
+    - all
+  - name: Ubuntu
+    versions:
+    - all
+  galaxy_tags:
+    - installer
+    - application
+    - system
+dependencies: []
