@@ -1,6 +1,6 @@
 Ansible Role: ara
 =========
-Ansible role to install ara on RHEL, Fedora, Centos and Ubuntu.
+Ansible role to install, configure ara on RHEL, Fedora, Centos and Ubuntu.
 
 Example Playbook
 ----------------
