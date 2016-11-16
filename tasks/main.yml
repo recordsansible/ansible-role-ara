@@ -21,7 +21,7 @@
     - libffi-devel
     - openssl-devel
     - redhat-rpm-config
-  when: ansible_pkg_mgr == 'yum'
+  when: ansible_distribution == "CentOS" or ansible_distribution == "redhat"
 - name: Install dependencies via apt
   apt: name={{ item }} state=latest
   with_items:
@@ -41,16 +41,16 @@
     - ara
     - tox
 - name: Enable ara plugin
-      lineinfile: dest={{ config_path }}
+  lineinfile: dest={{ config_path }}
               line={{ item.line }}
               insertafter={{ item.insertafter }}
-      with_items:
-       - { line: "callback_plugins = /usr/lib/python2.7/site-packages/ara/callback:$VIRTUAL_ENV/lib/python2.7/site-packages/ara/callback:/usr/local/lib/python2.7/dist-packages/ara/callback", insertafter: "^#? some" }
-    - name: copy systemd service template
-      template: src=templates/ara.service.conf.j2 dest=/etc/systemd/system/ara.service owner=root group=root mode=0644
-    - name: daemon reload
-      shell: systemctl daemon-reload
-    - name: Enable service
-      service: name=ara enabled=yes
-    - name: start service
-      service: name=ara state=started
+  with_items:
+    - { line: "callback_plugins = /usr/lib/python2.7/site-packages/ara/callback:$VIRTUAL_ENV/lib/python2.7/site-packages/ara/callback:/usr/local/lib/python2.7/dist-packages/ara/callback", insertafter: "^#? some" }
+- name: copy systemd service template
+  template: src=/etc/ansible/roles/chaitanyaenr.ara/templates/ara-service.conf.j2 dest=/etc/systemd/system/ara.service owner=root group=root mode=0644
+- name: daemon reload
+  shell: systemctl daemon-reload
+- name: Enable service
+  service: name=ara enabled=yes
+- name: start service
+  service: name=ara state=started
