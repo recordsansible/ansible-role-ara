@@ -3,7 +3,7 @@ galaxy_info:
   author: Naga Ravi Chaitanya Elluri
   description: Installs ara
   company: redhat
-  license: BSD
+  license: Apache2
   min_ansible_version: 2.1
   platforms:
   - name: EL

@@ -9,9 +9,9 @@ By default, it runs on localhost:9191
 Example Playbook
 ----------------
 
-- hosts: servers
-  roles:
-    - role: chaitanyaenr.ara
+    - hosts: servers
+      roles:
+         - role: chaitanyaenr.ara
 
 License
 -------
