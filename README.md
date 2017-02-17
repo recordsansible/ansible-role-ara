@@ -1,10 +1,10 @@
 Ansible Role: ara
 =========
-Ansible role to install, configure ara on RHEL, Fedora, Centos and Ubuntu.
+Ansible role to install, configure ara on RHEL, Fedora, Centos and Ubuntu
 
 systemd is configured to start ara on boot, failures
 
-By default, it runs on localhost:9191
+By default mod_wsgi is used to host ara on localhost, if you prefer embedded server then you can set the embedded server, port variables in defaults/main.yml
 
 Example Playbook
 ----------------

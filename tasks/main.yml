@@ -12,6 +12,8 @@
     - python-setuptools
     - tree
     - libselinux-python
+    - httpd
+    - mod_wsgi
   when: ansible_pkg_mgr == 'dnf'
 - name: Install dependencies via yum
   yum: name={{ item }} state=latest
@@ -21,6 +23,8 @@
     - libffi-devel
     - openssl-devel
     - redhat-rpm-config
+    - httpd
+    - mod_wsgi
   when: ansible_distribution == "CentOS" or ansible_distribution == "redhat"
 - name: Install dependencies via apt
   apt: name={{ item }} state=latest
@@ -31,6 +35,8 @@
     - libssl-dev
     - python-pip
     - tree
+    - apache2
+    - libapache2-mod-wsgi
   when: ansible_pkg_mgr == 'apt'
 - name: Install pip
   easy_install: name=pip state=latest
@@ -46,11 +52,51 @@
               insertafter={{ item.insertafter }}
   with_items:
     - { line: "callback_plugins = /usr/lib/python2.7/site-packages/ara/callback:$VIRTUAL_ENV/lib/python2.7/site-packages/ara/callback:/usr/local/lib/python2.7/dist-packages/ara/callback", insertafter: "^#? some" }
-- name: copy systemd service template
-  template: src=/etc/ansible/roles/chaitanyaenr.ara/templates/ara-service.conf.j2 dest=/etc/systemd/system/ara.service owner=root group=root mode=0644
-- name: daemon reload
-  shell: systemctl daemon-reload
-- name: Enable service
-  service: name=ara enabled=yes
-- name: start service
-  service: name=ara state=started
+- block:
+   - name: create directory for ansible and ara
+     file: path=/var/www/ara owner=apache group=apache state=directory recurse=yes
+   - name: create ansible.cfg which has the ara settings
+     file: path=/var/www/ara/ansible.cfg state=touch
+   - name: copy ARA’s WSGI script to the web directory
+     shell: cp -p $(which ara-wsgi) /var/www/ara/
+   - name : create the ansible and ARA configuration
+     blockinfile: |
+       dest=/var/www/ara/ansible.cfg
+       content="[defaults]
+            # This directory is required to store temporary files for Ansible and ARA
+            local_tmp = /var/www/ara/.ansible/tmp
+
+            [ara]
+            # This will default the database and logs location to be inside that directory.
+            dir = /var/www/ara/.ara"
+   - name: get status of selinux
+     shell: getenforce
+     register: selinux_status
+   - name: allow apache to manage the files
+     seboolean:
+      name: httpd_unified
+      state: yes
+     when: selinux_status.stdout == "Enforcing"
+   - name: apache configuration
+     template: src=/etc/ansible/roles/ansible-role-ara/templates/ara-rhel.conf.j2 dest=/etc/httpd/conf.d/ara.conf owner=root group=root mode=0644
+     when: ansible_distribution == "CentOS" or ansible_distribution == "redhat" or ansible_pkg_mgr == 'dnf'
+   - name: apache configuration
+     template: src=/etc/ansible/roles/ansible-role-ara/templates/ara-debian.conf.j2 dest=/etc/httpd/conf.d/ara.conf owner=root group=root mode=0644
+     when: ansible_pkg_mgr == 'apt'
+   - name: restart apache
+     systemd: state=restarted name=httpd
+     when: ansible_distribution == "CentOS" or ansible_distribution == "redhat" or ansible_pkg_mgr == 'dnf'
+   - name: restart apache
+     systemd: name=apache2 state=restarted
+     when: ansible_pkg_mgr == 'apt'
+  when: mod_wsgi is defined
+- block:
+   - name: copy systemd service template
+     template: src=/etc/ansible/roles/chaitanyaenr.ara/templates/ara-service.conf.j2 dest=/etc/systemd/system/ara.service owner=root group=root mode=0644
+   - name: daemon reload
+     shell: systemctl daemon-reload
+   - name: Enable service
+     service: name=ara enabled=yes
+   - name: start service
+     service: name=ara state=started
+  when: embedded_server is defined
