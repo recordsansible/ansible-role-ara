@@ -1,0 +1,19 @@
+<VirtualHost *:80>
+    # Replace ServerName by your hostname
+    ServerName {{ ara_host }}
+
+    ErrorLog /var/log/httpd/ara-error.log
+    LogLevel warn
+    CustomLog /var/log/httpd/ara-access.log combined
+
+    WSGIDaemonProcess ara user=apache group=apache processes=1 threads=4
+    WSGIScriptAlias / /var/www/ara/ara-wsgi
+
+    SetEnv ANSIBLE_CONFIG /var/www/ara/ansible.cfg
+
+    <Directory /var/www/ara>
+        WSGIProcessGroup ara
+        WSGIApplicationGroup %{GLOBAL}
+        Require all granted
+    </Directory>
+</VirtualHost>
