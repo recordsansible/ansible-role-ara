@@ -1,0 +1,17 @@
+---
+# vars file for ara
+
+required_packages:
+  - gcc
+  - python-devel
+  - libffi-devel
+  - openssl-devel
+  - redhat-rpm-config
+  - httpd
+  - mod_wsgi
+
+apache_service: httpd
+apache_user: apache
+apache_group: apache
+apache_log_path: /var/log/httpd
+apache_config_path: /etc/httpd/conf.d
