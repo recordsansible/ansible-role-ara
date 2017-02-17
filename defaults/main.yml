@@ -3,3 +3,5 @@
 ara_host: localhost
 ara_port: 9191
 config_path: ~/ansible.cfg
+mod_wsgi: false
+embedded_server: true
