@@ -2,4 +2,9 @@
 
 ara_host: localhost
 ara_port: 9191
-config_path: ~/ansible.cfg
+default_embedded_config_path: ~/ansible.cfg
+default_wsgi_config_path: /var/www/ara/ansible.cfg
+# set config_path
+#config_path:
+mod_wsgi: false
+embedded_server: true

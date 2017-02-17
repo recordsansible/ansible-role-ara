@@ -1,0 +1,18 @@
+---
+required_packages:
+  - gcc
+  - python-dev
+  - libffi-dev
+  - libssl-dev
+  - python-setuptools
+  - libxml2-devel 
+  - libxslt-devel
+  - libselinux-python
+required_wsgi_packages:
+  - apache2
+  - libapache2-mod-wsgi
+apache_service: apache2
+apache_user: www-data
+apache_group: www-data
+apache_log_path: /var/log/apache2
+apache_config_path: /etc/apache/sites-available
