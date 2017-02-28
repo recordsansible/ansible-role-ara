@@ -25,9 +25,9 @@
 - name: Install dependencies via apt
   apt: name={{ item }} state=latest
   with_items:
-    - gcc 
-    - python-dev 
-    - libffi-dev 
+    - gcc
+    - python-dev
+    - libffi-dev
     - libssl-dev
     - python-pip
     - tree
@@ -47,7 +47,7 @@
   with_items:
     - { line: "callback_plugins = /usr/lib/python2.7/site-packages/ara/callback:$VIRTUAL_ENV/lib/python2.7/site-packages/ara/callback:/usr/local/lib/python2.7/dist-packages/ara/callback", insertafter: "^#? some" }
 - name: copy systemd service template
-  template: src=/etc/ansible/roles/chaitanyaenr.ara/templates/ara-service.conf.j2 dest=/etc/systemd/system/ara.service owner=root group=root mode=0644
+  template: src=ara-service.conf.j2 dest=/etc/systemd/system/ara.service owner=root group=root mode=0644
 - name: daemon reload
   shell: systemctl daemon-reload
 - name: Enable service
