@@ -1,10 +1,33 @@
 ---
+#   Copyright 2017 Red Hat, Inc. All Rights Reserved.
+#
+#   Licensed under the Apache License, Version 2.0 (the "License"); you may
+#   not use this file except in compliance with the License. You may obtain
+#   a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#   WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#   License for the specific language governing permissions and limitations
+#   under the License.
 
-ara_host: localhost
-ara_port: 9191
-default_embedded_config_path: ~/ansible.cfg
-default_wsgi_config_path: /var/www/ara/ansible.cfg
-# set config_path
-#config_path:
+# Default paths where an ansible.cfg file is expected
+default_embedded_config_path: "{{ lookup('env','HOME') }}"
+default_wsgi_config_path: "/var/www/ara"
+
+# Override the path where an ansible.cfg file will be used
+# config_path:
+
+# Host to listen on for embedded server or apache
+ara_host: "localhost"
+
+# Port to listen on for embedded server or apache
+ara_port: "80"
+
+# Deploy with apache and mod_wsgi
 mod_wsgi: false
+
+# Deploy with persistent embedded_webserver
 embedded_server: true
