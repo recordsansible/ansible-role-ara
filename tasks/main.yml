@@ -1,112 +1,143 @@
 ---
-- name: include OS family/distribution specific variables
+#   Copyright 2017 Red Hat, Inc. All Rights Reserved.
+#
+#   Licensed under the Apache License, Version 2.0 (the "License"); you may
+#   not use this file except in compliance with the License. You may obtain
+#   a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#   WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#   License for the specific language governing permissions and limitations
+#   under the License.
+
+- name: Include OS family/distribution specific variables
   include_vars: "{{ item }}"
   with_first_found:
     - "{{ ansible_distribution }}.yml"
     - "{{ ansible_os_family }}.yml"
 
-- name: install required dependencies
+- name: Install required dependencies
   package:
     name: "{{ item }}"
     state: "present"
   with_items: "{{ required_packages }}"
 
-- name: install pip
+- name: Install pip
   easy_install: 
     name: pip 
     state: present
-  when: ansible_pkg_mgr == 'yum'
 
-- name: install ara
+- name: Install ARA
   pip:
     name: ara
+    state: present
 
-- name: set ara_config_path when using mod_wsgi
-  set_fact:
-      ara_config_path: "{{ config_path | default(default_wsgi_config_path) }}"
+- block:
+    - name: Install required dependencies for mod_wsgi
+      package:
+        name: "{{ item }}"
+        state: "present"
+      with_items: "{{ required_wsgi_packages }}"
+
+     - name: Get status of selinux
+       command: getenforce
+       register: selinux_status
+       when: ansible_os_family == "RedHat"
+
+     - name: Set selinux boolean to allow Apache to manage the files
+       seboolean:
+        name: httpd_unified
+        state: yes
+       when:
+        - ansible_os_family == "RedHat"
+        - selinux_status.stdout == "Enforcing"
+
+    - name: Set ara_config_path when using mod_wsgi
+      set_fact:
+        ara_config_path: "{{ config_path | default(default_wsgi_config_path) }}"
+
+    - name: Ensure configuration directory for Ansible and ARA exists
+      file:
+        path: "{{ ara_config_path }}"
+        owner: "{{ apache_user }}"
+        group: "{{ apache_group }}"
+        state: directory
+        recurse: yes
+
+    - name: Create default configuration file if one does not exist
+      copy:
+        src: files/ansible.cfg
+        dest: "{{ ara_config_path }}/ansible.cfg"
+
+     - name: Copy ARA’s WSGI script to the config path
+       shell: cp -p $(which ara-wsgi) {{ ara_config_path }}
+
+     - name: Set up Apache configuration
+       template:
+         src: templates/ara.conf.j2
+         dest: "{{ apache_config_path }}/ara.conf"
+         owner: root
+         group: root
+         mode: 0644
+       notify:
+         - Restart Apache
+
+     - name: Ensure the configuration is enabled
+       command: a2ensite ara
+       when: ansible_os_family == "Debian"
+       notify:
+         - Restart Apache
+
+     - name: Ensure apache is enabled
+       service:
+         name: "{{ apache_service }}"
+         enabled: yes
   when: mod_wsgi | bool
 
-- name: set ara_config_path when using embedded_server
-  set_fact:
+- block:
+  - name: Set ara_config_path when using embedded_server
+    set_fact:
       ara_config_path: "{{ config_path | default(default_embedded_config_path) }}"
-  when: embedded_server | bool
 
-- name: check if ara_config_path exists
-  stat: path="{{ ara_config_path }}"
-  register: file_status
+  - name: Ensure configuration directory for Ansible and ARA exists
+    file:
+      path: "{{ ara_config_path }}"
+      state: directory
+      recurse: yes
 
-- name: create config file if it doesn't exist
-  copy:
-    src: files/ansible.cfg
-    dest: "{{ ara_config_path }}"
-   
-- name: get ara install location
-  shell: python -c "import os,ara; print(os.path.dirname(ara.__file__))"
-  register: ara_location
+  - name: Create default configuration file if one does not exist
+    template:
+      src: files/ansible.cfg
+      dest: "{{ ara_config_path }}/ansible.cfg"
 
-- name: enable ara callback plugin
-  ini_file:
-    dest: "{{ ara_config_path }}"
-    section: defaults
-    option: callback_plugins
-    value: "{{ ara_location.stdout }}/plugins/callbacks"
-
-- block:
-   - name: create directory for ansible and ara
-     file: 
-       path: /var/www/ara 
-       owner: apache 
-       group: apache 
-       state: directory 
-       recurse: yes
-
-   - name: copy ARA’s WSGI script to the web directory
-     shell: cp -p $(which ara-wsgi) /var/www/ara/
-
-   - name: get status of selinux
-     shell: getenforce
-     register: selinux_status
-
-   - name: set selinux boolean to allow apache to manage the files
-     seboolean:
-      name: httpd_unified
-      state: yes
-     when: selinux_status.stdout == "Enforcing" and ansible_os_family == "RedHat"
-
-   - name: apache configuration
-     template: 
-       src: templates/ara.conf.j2 
-       dest: "{{ apache_config_path }}/ara.conf"
-       owner: root 
-       group: root 
-       mode: 0644
-
-   - name: ensure the configuration is enabled
-     shell: a2ensite ara
-     when: ansible_os_family == "Ubuntu"
-
-   - name: Restart apache
-     service:
-       name: "{{ apache_service }}"
-       state: "restarted"
-       enabled: yes
-  when: mod_wsgi | bool
-
-- block:
-   - name: copy systemd service template
+   - name: Copy systemd service template
      template: 
        src: templates/ara-service.conf.j2 
        dest: /etc/systemd/system/ara.service 
-       owner: root 
-       group: root 
+       owner: root
+       group: root
        mode: 0644
 
-   - name: daemon reload
-     shell: systemctl daemon-reload
+   - name: Reload systemctl
+     command: systemctl daemon-reload
 
-   - name: start and enable service
+   - name: Start and enable the embedded server service
      service: 
        name: ara
-       state: started 
+       state: started
        enabled: yes
   when: embedded_server | bool
+
+- name: Get ARA's installed location
+  shell: python -c "import os,ara; print(os.path.dirname(ara.__file__))"
+  register: ara_location
+
+- name: Enable ARA's callback plugin
+  ini_file:
+    dest: "{{ ara_config_path }}/ansible.cfg"
+    section: defaults
+    option: callback_plugins
+    value: "{{ ara_location.stdout }}/plugins/callbacks"
