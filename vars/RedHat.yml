@@ -15,14 +15,15 @@
 
 required_packages:
   - gcc
+  - libffi-devel
+  - libselinux-python
+  - libxml2-devel
+  - libxslt-devel
+  - openssl-devel
   - python-devel
   - python-setuptools
-  - libffi-devel
-  - openssl-devel
   - redhat-rpm-config
-  - libxml2-devel 
-  - libxslt-devel
-  - libselinux-python
+  - which
 
 required_wsgi_packages:
   - httpd

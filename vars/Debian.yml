@@ -15,12 +15,13 @@
 
 required_packages:
   - gcc
-  - python-dev
   - libffi-dev
   - libssl-dev
-  - python-setuptools
   - libxml2-dev
   - libxslt-dev
+  - python-dev
+  - python-setuptools
+  - which
 
 required_wsgi_packages:
   - apache2
