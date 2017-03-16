@@ -1,0 +1,8 @@
+Code-Review+2: David Moreau Simard <dms@redhat.com>
+Workflow+1: David Moreau Simard <dms@redhat.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 16 Mar 2017 14:13:48 +0000
+Reviewed-on: https://review.openstack.org/446530
+Project: openstack/ansible-role-ara
+Branch: refs/heads/master
