@@ -73,7 +73,7 @@
         dest: "{{ ara_config_path }}/ansible.cfg"
         force: no
 
-    - name: Copy ARA’s WSGI script to the config path
+    - name: Copy ARA's WSGI script to the config path
       shell: cp -p $(which ara-wsgi) {{ ara_config_path }}
 
     - name: Set up Apache configuration
