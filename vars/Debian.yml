@@ -21,7 +21,7 @@ required_packages:
   - libxslt-dev
   - python-dev
   - python-setuptools
-  - which
+  - debianutils
 
 required_wsgi_packages:
   - apache2
