@@ -1,0 +1,37 @@
+- block:
+    - name: Set ara_config_path when using embedded_server
+      set_fact:
+        ara_config_path: "{{ config_path | default(default_embedded_config_path) }}"
+
+    - name: Ensure configuration directory for ARA exists
+      file:
+        path: "{{ ara_config_path }}"
+        state: directory
+        recurse: yes
+
+    - name: Create default configuration file if one does not exist
+      template:
+        src: templates/ansible.cfg.j2
+        dest: "{{ ara_config_path }}/ansible.cfg"
+        force: no
+
+    - name: Get the location of ara-manage
+      command: which ara-manage
+      register: ara_manage
+      changed_when: false
+
+    - name: Copy systemd service template
+      template:
+        src: templates/ara-service.conf.j2
+        dest: /usr/lib/systemd/system/ara.service
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Start and enable the embedded server service
+      systemd:
+        name: ara
+        state: started
+        enabled: yes
+        daemon_reload: yes
+  become: true

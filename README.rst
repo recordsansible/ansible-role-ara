@@ -33,8 +33,19 @@ It provides installation and configuration of the web application under the
 
 Using the role
 --------------
-::
 
+You can get the role using the following commands:
+
+::
+    mkdir roles
+    git clone https://git.openstack.org/openstack/ansible-role-ara roles/ara
+
+By default, the embedded server will be use, you have to edit defaults/main.yaml to set
+use_apache_server to True
+
+Create a simple playbook to do the deployment:
+
+::
     mkdir roles
     git clone https://git.openstack.org/openstack/ansible-role-ara roles/ara
     cat << EOF > playbook.yml
