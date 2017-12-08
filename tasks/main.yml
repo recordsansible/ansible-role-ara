@@ -24,136 +24,38 @@
     name: "{{ item }}"
     state: "present"
   with_items: "{{ required_packages }}"
+  become: true
 
 - name: Install pip
-  easy_install: 
-    name: pip 
+  easy_install:
+    name: pip
     state: present
+  become: true
 
 - name: Install ARA with pip
   pip:
     name: ara
     state: present
+  become: true
 
-- block:
-    - name: Install required dependencies for mod_wsgi
-      package:
-        name: "{{ item }}"
-        state: "present"
-      with_items: "{{ required_wsgi_packages }}"
+- include_tasks: apache_server.yml
+  when: use_apache_server
 
-    - name: Get status of selinux
-      command: getenforce
-      register: selinux_status
-      when: ansible_os_family == "RedHat"
+- include_tasks: embedded_server.yaml
+  when: not use_apache_server
 
-    - name: Set selinux boolean to allow Apache to manage the files
-      seboolean:
-        name: httpd_unified
-        state: yes
-      when:
-        - ansible_os_family == "RedHat"
-        - selinux_status.stdout == "Enforcing"
-
-    - name: Set ara_config_path when using mod_wsgi
-      set_fact:
-        ara_config_path: "{{ config_path | default(default_wsgi_config_path) }}"
-
-    - name: Ensure configuration directory for Ansible and ARA exists
-      file:
-        path: "{{ ara_config_path }}"
-        owner: "{{ apache_user }}"
-        group: "{{ apache_group }}"
-        state: directory
-        recurse: yes
-
-    - name: Create default configuration file if one does not exist
-      template:
-        src: templates/ansible.cfg.j2
-        dest: "{{ ara_config_path }}/ansible.cfg"
-        force: no
-
-    - name: Copy ARA's WSGI script to the config path
-      shell: cp -p $(which ara-wsgi) {{ ara_config_path }}
-
-    - name: Set up Apache configuration
-      template:
-        src: templates/ara.conf.j2
-        dest: "{{ apache_config_path }}/ara.conf"
-        owner: root
-        group: root
-        mode: 0644
-      notify:
-        - Restart Apache
-
-    - name: Ensure the configuration is enabled
-      command: a2ensite ara
-      when: ansible_os_family == "Debian"
-      notify:
-       - Restart Apache
-
-    - name: Flush handlers
-      meta: flush_handlers
-
-    - name: Ensure apache is enabled
-      service:
-        name: "{{ apache_service }}"
-        enabled: yes
-  when: mod_wsgi | bool
-
-- block:
-    - name: Set ara_config_path when using embedded_server
-      set_fact:
-        ara_config_path: "{{ config_path | default(default_embedded_config_path) }}"
-
-    - name: Ensure configuration directory for ARA exists
-      file:
-        path: "{{ ara_config_path }}"
-        state: directory
-        recurse: yes
-
-    - name: Create default configuration file if one does not exist
-      template:
-        src: templates/ansible.cfg.j2
-        dest: "{{ ara_config_path }}/ansible.cfg"
-        force: no
-
-    - name: Get the location of ara-manage
-      command: which ara-manage
-      register: ara_manage
-      changed_when: false
-
-    - name: Copy systemd service template
-      template:
-        src: templates/ara-service.conf.j2
-        dest: /etc/systemd/system/ara.service
-        owner: root
-        group: root
-        mode: 0644
-      notify:
-        - Reload systemctl
-
-    - name: Flush handlers
-      meta: flush_handlers
-
-    - name: Start and enable the embedded server service
-      service:
-        name: ara
-        state: started
-        enabled: yes
-  when: embedded_server | bool
-
-- name: Get ARA's installed location
+- name: Get ARA installed location
   shell: python -c "import os,ara; print(os.path.dirname(ara.__file__))"
   register: ara_location
   changed_when: false
 
-- name: Enable ARA's callback plugin
+- name: Enable ARA callback plugin
   ini_file:
     dest: "{{ ara_config_path }}/ansible.cfg"
     section: defaults
     option: callback_plugins
     value: "{{ ara_location.stdout }}/plugins/callbacks"
+  become: true
 
 - name: Provide web application URL
   vars:
