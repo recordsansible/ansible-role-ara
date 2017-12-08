@@ -1,0 +1,64 @@
+---
+- block:
+    - name: Install required dependencies for mod_wsgi
+      package:
+        name: "{{ item }}"
+        state: "present"
+      with_items: "{{ required_wsgi_packages }}"
+
+    - name: Get status of selinux
+      command: getenforce
+      register: selinux_status
+      when: ansible_os_family == "RedHat"
+
+    - name: Set selinux boolean to allow Apache to manage the files
+      seboolean:
+        name: httpd_unified
+        state: yes
+      when:
+        - ansible_os_family == "RedHat"
+        - selinux_status.stdout == "Enforcing"
+
+    - name: Set ara_config_path when using mod_wsgi
+      set_fact:
+        ara_config_path: "{{ config_path | default(default_wsgi_config_path) }}"
+
+    - name: Ensure configuration directory for Ansible and ARA exists
+      file:
+        path: "{{ ara_config_path }}"
+        owner: "{{ apache_user }}"
+        group: "{{ apache_group }}"
+        state: directory
+        recurse: yes
+
+    - name: Create default configuration file if one does not exist
+      template:
+        src: templates/ansible.cfg.j2
+        dest: "{{ ara_config_path }}/ansible.cfg"
+        force: no
+
+    - name: Copy ARA WSGI script to the config path
+      shell: cp -p $(which ara-wsgi) {{ ara_config_path }}
+
+    - name: Set up Apache configuration
+      template:
+        src: templates/ara.conf.j2
+        dest: "{{ apache_config_path }}/ara.conf"
+        owner: root
+        group: root
+        mode: 0644
+      notify:
+        - restart apache
+
+    - name: Ensure Apache server is started
+      systemd:
+        state: started
+        name: "{{ apache_service }}"
+        enabled: true
+
+    - name: Ensure the configuration is enabled
+      command: a2ensite ara
+      when: ansible_os_family == "Debian"
+      notify:
+       - restart apache
+  become: true
