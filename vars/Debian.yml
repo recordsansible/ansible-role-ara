@@ -31,4 +31,4 @@ apache_service: apache2
 apache_user: www-data
 apache_group: www-data
 apache_log_path: /var/log/apache2
-apache_config_path: /etc/apache/sites-available
+apache_config_path: /etc/apache2/sites-available
