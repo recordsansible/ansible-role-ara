@@ -1,0 +1,56 @@
+- nodeset:
+    name: ara-centos-7
+    nodes:
+      - name: bastion
+        label: centos-7
+      - name:
+          - db01
+          - web01
+        label: centos-7
+    groups:
+      - name: database
+        nodes:
+          - db01
+      - name: server
+        nodes:
+          - web01
+
+- job:
+    name: ara-role-integration-base
+    parent: base-minimal
+    pre-run: zuul.d/playbooks/pre.yml
+    run: zuul.d/playbooks/run.yml
+    post-run: zuul.d/playbooks/post.yml
+    timeout: 900
+    roles:
+      - name: ara
+        zuul: openstack/ansible-role-ara
+      - zuul: openstack-infra/zuul-jobs
+      - zuul: openstack-infra/openstack-zuul-jobs
+    required-projects:
+      - openstack/ara
+
+- job:
+    name: ara-role-integration-centos
+    parent: ara-role-integration-base
+    nodeset: ara-centos-7
+
+# - job:
+#     name: ara-integration-ubuntu-xenial
+#     parent: ara-integration-base
+#     nodeset: ara-ubuntu-xenial
+#     vars:
+#       target: ubuntu
+#       config:
+#         ansible_version: 2.5.0
+#         server: nginx
+#         application: embedded
+#         database: sqlite
+
+- project:
+    check:
+      jobs:
+        - ara-role-integration-centos
+    gate:
+      jobs:
+        - ara-role-integration-centos
