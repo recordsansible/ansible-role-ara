@@ -1,0 +1,97 @@
+- nodeset:
+    name: ara-fedora-27
+    nodes:
+      - name: bastion
+        label: fedora-27
+      - name:
+          - app01
+          - db01
+          - web01
+        label: fedora-27
+    groups:
+      - name: application
+        nodes:
+          - app01
+      - name: database
+        nodes:
+          - db01
+      - name: server
+        nodes:
+          - web01
+
+- nodeset:
+    name: ara-ubuntu-xenial
+    nodes:
+      - name: bastion
+        label: ubuntu-xenial
+      - name:
+          - app01
+          - db01
+          - web01
+        label: ubuntu-xenial
+    groups:
+      - name: application
+        nodes:
+          - app01
+      - name: database
+        nodes:
+          - db01
+      - name: server
+        nodes:
+          - web01
+
+- job:
+    name: ara-role-integration-base
+    parent: base
+    pre-run: zuul.d/playbooks/pre.yml
+    run: zuul.d/playbooks/run.yml
+    post-run: zuul.d/playbooks/post.yml
+    timeout: 900
+    required-projects:
+      - openstack/ara
+
+- job:
+    name: ara-role-integration-fedora
+    parent: ara-role-integration-base
+    nodeset: ara-fedora-27
+    vars:
+      target: fedora
+      config:
+        ansible_version: 2.5.0
+        server: apache
+        application: wsgi
+        database: mariadb
+
+- job:
+    name: ara-role-integration-ubuntu
+    parent: ara-role-integration-base
+    nodeset: ara-ubuntu-xenial
+    vars:
+      target: ubuntu
+      config:
+        ansible_version: 2.5.0
+        server: nginx
+        application: embedded
+        database: sqlite
+
+# - job:
+#     name: ara-integration-ubuntu-xenial
+#     parent: ara-integration-base
+#     nodeset: ara-ubuntu-xenial
+#     vars:
+#       target: ubuntu
+#       config:
+#         ansible_version: 2.5.0
+#         server: nginx
+#         application: embedded
+#         database: sqlite
+
+- project:
+    check:
+      jobs:
+        - ara-role-integration-fedora
+        - ara-role-integration-ubuntu
+    gate:
+      jobs:
+        - ara-role-integration-fedora
+        - ara-role-integration-ubuntu
