@@ -1,0 +1,9 @@
+[defaults]
+inventory = {{ ansible_inventory }}
+roles_path = {{ ansible_roles }}
+gathering = smart
+gather_subset = !all
+action_plugins = {{ ara_location }}/plugins/action
+callback_plugins = {{ ara_location }}/plugins/callbacks
+library = {{ ara_location }}/plugins/library
+retry_files_enabled = False
