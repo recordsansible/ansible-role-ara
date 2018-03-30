@@ -1,0 +1,42 @@
+#   Copyright 2018 Red Hat, Inc. All Rights Reserved.
+#
+#   Licensed under the Apache License, Version 2.0 (the "License"); you may
+#   not use this file except in compliance with the License. You may obtain
+#   a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#   WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#   License for the specific language governing permissions and limitations
+#   under the License.
+
+- name: Bootstrap bastion host
+  hosts: bastion
+  gather_facts: true
+  roles:
+    - configure-unbound
+    - use-cached-repos
+    - mirror-info
+    - role: configure-mirrors
+      set_apt_mirrors_trusted: True
+    - ansible
+  tasks:
+    - name: Synchronize src repos to workspace directory.
+      synchronize:
+        dest: .
+        src: "{{ zuul.executor.src_root }}"
+      no_log: true
+
+    # NOTE(pabelanger): Because use-cache-repos force the delete of origin, the
+    # git module from ansible will not setup origin correctly. This is like a
+    # bug in ansible, and should be discussed upstream.
+    - name: Add origin to local git repos
+      command: "git remote add origin https://{{ item.canonical_name }}"
+      args:
+        chdir: "{{ ansible_user_dir }}/{{ item.src_dir}}"
+      with_items: "{{ zuul.projects.values() | list }}"
+      # ANSIBLE0006: git remote is not supported by ansible module
+      tags:
+        - skip_ansible_lint
