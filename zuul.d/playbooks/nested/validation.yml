@@ -1,0 +1,47 @@
+---
+#  Copyright (c) 2018 Red Hat, Inc.
+#
+#  This file is part of ARA Records Ansible.
+#
+#  ARA is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  ARA is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with ARA.  If not, see <http://www.gnu.org/licenses/>.
+
+# TODO: Flesh this out
+- name: Get ARA's pip installed version
+  environment:
+    PATH: "{{ path_with_virtualenv | default(omit) }}"
+  command: pip show ara
+  register: ara_version
+
+- name: Record the ARA version
+  ara_record:
+    key: ara_version
+    value: "{{ ara_version }}"
+    type: json
+
+- name: Retrieve the about page
+  uri:
+    url: "http://{{ ansible_host }}/ara/about/"
+    status_code: 200
+    return_content: yes
+  register: about
+
+- name: Record the result
+  ara_record:
+    key: curl
+    value: "{{ about }}"
+    type: json
+
+- name: Validate that we have the expected content
+  fail:
+  when: "'ARA Records Ansible' not in about.content"
