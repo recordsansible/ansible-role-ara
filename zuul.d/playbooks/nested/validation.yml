@@ -16,29 +16,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with ARA.  If not, see <http://www.gnu.org/licenses/>.
 
-# TODO: Change to systemd task for daemon_reload >= 2.4
-- name: reload systemctl daemon
-  become: true
-  command: systemctl daemon-reload
+# TODO: Flesh this out
+- name: Retrieve the about page
+  command: curl -I {{ ansible_host }}/ara/about/
+  delegate_to: bastion
+  register: about
 
-- name: restart apache
-  become: true
-  service:
-   name: "{{ apache_service }}"
-   state: restarted
-  when: ara.deployment.server == 'apache'
-
-- name: restart nginx
-  become: true
-  service:
-    name: nginx
-    state: restarted
-  when: ara.deployment.server == 'nginx'
-
-- name: restart ara
-  become: true
-  service:
-    name: ara
-    state: restarted
-  when: ara.deployment.server == 'embedded' or
-        ara.deployment.server == 'nginx' and ara.deployment.type == 'embedded_proxy'
+- name: Assert that it works
+  assert:
+    that:
+      - '"200 OK" in about.stdout'
