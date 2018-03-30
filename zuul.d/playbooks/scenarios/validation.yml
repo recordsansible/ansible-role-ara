@@ -1,0 +1,64 @@
+---
+#  Copyright (c) 2018 Red Hat, Inc.
+#
+#  This file is part of ARA Records Ansible.
+#
+#  ARA is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  ARA is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with ARA.  If not, see <http://www.gnu.org/licenses/>.
+
+# These tasks are included by the different playbooks for validating the
+# deployment.
+
+# TODO: Flesh this out (testinfra?)
+
+- name: Run ARA's smoke tests (nested)
+  environment:
+    PATH: "{{ path_with_virtualenv | default(omit) }}"
+    ANSIBLE_CONFIG: /etc/ara/ara.cfg
+  command: ansible-playbook "{{ ara_location }}/tests/integration/smoke.yml"
+  register: smoke_tests
+
+- name: Record the results
+  ara_record:
+    key: smoke_tests
+    value: "{{ smoke_tests }}"
+    type: json
+
+- name: Get ARA's pip installed version
+  environment:
+    PATH: "{{ path_with_virtualenv | default(omit) }}"
+  command: pip show ara
+  register: ara_version
+
+- name: Record the ARA version
+  ara_record:
+    key: ara_version
+    value: "{{ ara_version }}"
+    type: json
+
+- name: Retrieve the reports page (nested)
+  uri:
+    url: "{{ webapp_url }}/reports/"
+    status_code: 200
+    return_content: yes
+  register: webapp_result
+
+- name: Record the result
+  ara_record:
+    key: webapp_result
+    value: "{{ webapp_result }}"
+    type: json
+
+- name: Validate that we have the expected content
+  fail:
+  when: "'Displaying 1 playbook reports' not in webapp_result.content"
