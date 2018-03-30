@@ -44,7 +44,7 @@
   vars:
     # Manage that the 'version' argument doesn't work when installing from source
     pkg_name: |
-      {%- if ara.params.install.pip.method == 'source' -%}
+      {%- if ara.params.install.pip.method == 'source' and ara.params.install.pip.version -%}
       {{- ara.params.install.pip.source }}@{{ ara.params.install.pip.version | default('master') -}}
       {%- else -%}
       ara
