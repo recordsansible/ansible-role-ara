@@ -38,7 +38,7 @@ ara:
   config:
     database: "sqlite:////var/lib/ara/ansible.sqlite"
     # Host to listen on for embedded server, apache or nginx
-    host: "{{ ansible_default_ipv4.address }}"
+    host: 127.0.0.1
     # Port to listen on for embedded server or apache
     port: 9191
     # Root (or prefix) for the web application location
