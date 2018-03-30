@@ -1,0 +1,22 @@
+---
+- nodeset:
+    name: ara-fedora-27
+    nodes:
+      - name: bastion
+        label: fedora-27
+
+      - label: fedora-27
+        name:
+          - app01
+          - db01
+          - web01
+    groups:
+      - name: application
+        nodes:
+          - app01
+      - name: database
+        nodes:
+          - db01
+      - name: server
+        nodes:
+          - web01
