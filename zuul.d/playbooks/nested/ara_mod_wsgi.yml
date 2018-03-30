@@ -16,29 +16,28 @@
 #  You should have received a copy of the GNU General Public License
 #  along with ARA.  If not, see <http://www.gnu.org/licenses/>.
 
-- name: reload systemctl daemon
-  become: true
-  systemd:
-    daemon_reload: yes
+# This runs the ARA role with parameters to set up apache with mod_wsgi.
+- name: Install ARA from source with mod_wsgi
+  hosts: server
+  vars:
+    ara_override:
+      config:
+        host: 0.0.0.0
+        application_root: /ara
+      install:
+        pip:
+          method: source
+          source: "{{ ansible_user_dir }}/src/git.openstack.org/openstack/ara"
+      deployment:
+        server: apache
+        type: mod_wsgi
+  tasks:
+    - name: Include the ARA role
+      include_role:
+        name: ara
 
-- name: restart apache
-  become: true
-  service:
-   name: "{{ apache_service }}"
-   state: restarted
-  when: ara.deployment.server == 'apache'
+    - name: Ensure handlers are flushed
+      meta: flush_handlers
 
-- name: restart nginx
-  become: true
-  service:
-    name: nginx
-    state: restarted
-  when: ara.deployment.server == 'nginx'
-
-- name: restart ara
-  become: true
-  service:
-    name: ara
-    state: restarted
-  when: ara.deployment.server == 'embedded' or
-        ara.deployment.server == 'nginx' and ara.deployment.type == 'embedded_proxy'
+    - name: Assert that the deployment worked
+      include_tasks: validation.yml
