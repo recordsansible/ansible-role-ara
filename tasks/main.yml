@@ -29,8 +29,9 @@
     - ara_override is defined
     - ara_override is mapping
 
+# TODO: Change this to include_tasks
 - name: Include ARA installation
-  include_tasks: "install/{{ ara.params.install.method }}.yml"
+  include: "install/{{ ara.params.install.method }}.yml"
 
 - name: Create user for ARA
   become: true
@@ -59,8 +60,9 @@
     src: logrotate.conf.j2
     dest: /etc/logrotate.d/ara
 
+# TODO: Change this to include_tasks
 - name: Include web server configuration
-  include_tasks: "{{ ara.deployment.server }}/{{ ara.deployment.type }}.yml"
+  include: "{{ ara.deployment.server }}/{{ ara.deployment.type }}.yml"
 
 - name: Create the ARA configuration file
   become: true
