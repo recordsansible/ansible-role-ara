@@ -1,0 +1,47 @@
+---
+- job:
+    name: ara-integration-base
+    parent: base
+    pre-run: .zuul.d/playbooks/pre.yml
+    run: .zuul.d/playbooks/run.yml
+    post-run: .zuul.d/playbooks/post.yml
+    timeout: 900
+    required-projects:
+      - openstack/ara
+
+- job:
+    name: ara-integration-fedora
+    parent: ara-integration-base
+    nodeset: ara-fedora-27
+    pre-run:
+      - .zuul.d/playbooks/pre/mariadb.yml
+    run: .zuul.d/playbooks/run.yml
+    vars:
+      target: fedora
+      config:
+        ansible_version: 2.5.0
+        server: apache
+        application: wsgi
+        database: mariadb
+
+# - job:
+#     name: ara-integration-ubuntu-xenial
+#     parent: ara-integration-base
+#     nodeset: ara-ubuntu-xenial
+#     vars:
+#       target: ubuntu
+#       config:
+#         ansible_version: 2.5.0
+#         server: nginx
+#         application: embedded
+#         database: sqlite
+
+- project:
+    check:
+      jobs:
+        - ara-integration-fedora
+#       - ara-integration-ubuntu
+    gate:
+      jobs:
+        - ara-integration-fedora
+#       - ara-integration-ubuntu
