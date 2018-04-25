@@ -19,6 +19,13 @@
     - "{{ ansible_distribution }}.yml"
     - "{{ ansible_os_family }}.yml"
 
+- name: Override default variables
+  set_fact:
+    ara: "{{ ara | combine(ara_override, recursive=true) }}"
+  when:
+    - ara_override is defined
+    - ara_override is mapping
+
 - name: Install required dependencies
   become: true
   package:

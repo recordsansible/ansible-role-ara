@@ -36,3 +36,10 @@ ara:
     nginx:
       # Where nginx will store the proxy cache
       cache_directory: /var/cache/nginx
+
+# You can use a variable called ara_override to use custom configuration
+# parameters.
+
+# ara_override:
+#   config:
+#     database: "mysql+pymysql://ara:password@localhost/ara"
