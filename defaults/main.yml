@@ -13,21 +13,23 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
-# Default paths where an ansible.cfg file is expected
-default_embedded_config_path: "{{ lookup('env','HOME') }}"
-default_wsgi_config_path: "/var/www/ara"
-
-# Override the path where an ansible.cfg file will be used
-# config_path:
-
-# Host to listen on for embedded server or apache
-ara_host: "{{ ansible_default_ipv4.address }}"
-
-# Port to listen on for embedded server or apache
-ara_port: "9191"
-
-# To deploy with apache server, set use_apache_server to True
-# When use_apache_server is False, the deployment will use embedded
-# server
-use_apache_server: False
-
+ara:
+  config:
+    database: "sqlite:////var/lib/ara/ansible.sqlite"
+    # Host to listen on for embedded server, apache or nginx
+    host: "{{ ansible_default_ipv4.address }}"
+    # Port to listen on for embedded server or apache
+    port: 9191
+    # Root (or prefix) for the web application location
+    application_root: /
+    # Directory where files are stored by default
+    dir: /var/lib/ara
+    # Path to the logging configuration
+    logconfig: /etc/ara/logging.yml
+    # Where logs are located
+    logfile: /var/log/ara/ara.log
+  deployment:
+    # Server (apache, embedded, nginx)
+    server: embedded
+    # Type (mod_wsgi, standalone, embedded-proxy, etc.)
+    type: standalone

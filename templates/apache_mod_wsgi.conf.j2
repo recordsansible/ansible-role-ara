@@ -1,0 +1,21 @@
+<VirtualHost *:80>
+    ServerName {{ ara.config.host }}
+
+    ErrorLog {{ apache_log_path }}/ara-error.log
+    LogLevel warn
+    CustomLog {{ apache_log_path }}/ara-access.log combined
+
+    <Directory "{{ wsgi_script | dirname }}">
+        <Files "ara-wsgi">
+            Allow from all
+            Satisfy Any
+        </Files>
+    </Directory>
+
+    WSGIDaemonProcess ara user=ara group=ara processes=1 threads=4
+    WSGIScriptAlias {{ ara.config.application_root }} {{ wsgi_script }}
+    WSGIProcessGroup ara
+    WSGIApplicationGroup %{GLOBAL}
+
+    SetEnv ANSIBLE_CONFIG /etc/ara/ara.cfg
+</VirtualHost>

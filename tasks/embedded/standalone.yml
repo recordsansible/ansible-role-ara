@@ -1,0 +1,26 @@
+- name: Get the location of ara-manage
+  command: which ara-manage
+  register: ara_manage
+  changed_when: false
+
+- name: Copy systemd service template
+  become: true
+  template:
+    src: templates/ara_service.conf.j2
+    dest: /etc/systemd/system/ara.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload systemctl daemon
+    - restart ara
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Ensure the embedded server service is started and enabled
+  become: true
+  systemd:
+    name: ara
+    state: started
+    enabled: yes
