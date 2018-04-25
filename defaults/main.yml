@@ -31,3 +31,6 @@ ara:
     server: embedded
     # Type (mod_wsgi, standalone, embedded-proxy, etc.)
     type: standalone
+    nginx:
+      # Where nginx will store the proxy cache
+      cache_directory: /var/cache/nginx

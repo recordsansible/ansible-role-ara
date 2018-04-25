@@ -34,3 +34,7 @@ apache_user: apache
 apache_group: apache
 apache_log_path: /var/log/httpd
 apache_config_path: /etc/httpd/conf.d
+
+nginx_user: nginx
+nginx_group: nginx
+nginx_config_path: /etc/nginx/conf.d
