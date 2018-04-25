@@ -1,0 +1,41 @@
+# We're setting ara.host to localhost, there's no point in making the web
+# application listen on 0.0.0.0 or other things since it'll be proxied by nginx
+- name: Override ARA host when reverse proxying
+  vars:
+    override:
+      config:
+        host: 127.0.0.1
+        host_proxy: "{{ ara.config.host }}"
+  set_fact:
+    ara: "{{ ara | combine(override, recursive=true) }}"
+  when: ara.config.host != '127.0.0.1'
+
+- name: Install the embedded server service
+  include_tasks: ../embedded/standalone.yml
+
+- name: Set selinux boolean to allow nginx to reverse proxy
+  become: yes
+  seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Install nginx
+  include_tasks: install.yml
+
+- name: Set up the nginx configuration
+  template:
+    src: nginx_embedded_proxy.conf.j2
+    dest: "{{ nginx_config_path }}/ara.conf"
+  notify:
+    - restart nginx
+
+- name: Enable the nginx configuration on Debian-like systems
+  file:
+    src: "{{ nginx_config_path }}/ara.conf"
+    dest: /etc/nginx/sites-enabled/ara.conf
+    state: link
+  when: ansible_os_family == 'Debian'
+  notify:
+    - restart nginx
