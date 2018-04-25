@@ -27,11 +27,13 @@
         owner: root
         group: root
         mode: 0644
+      notify:
+        - reload systemctl daemon
+        - restart ara
 
     - name: Start and enable the embedded server service
       systemd:
         name: ara
         state: started
         enabled: yes
-        daemon_reload: yes
   become: true
