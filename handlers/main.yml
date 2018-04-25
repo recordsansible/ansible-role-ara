@@ -18,13 +18,23 @@
     daemon_reload: yes
 
 - name: restart apache
+  become: true
   service:
    name: "{{ apache_service }}"
    state: restarted
+  when: ara.deployment.server == 'apache'
+
+- name: restart nginx
   become: true
+  service:
+    name: nginx
+    state: restarted
+  when: ara.deployment.server == 'nginx'
 
 - name: restart ara
+  become: true
   service:
     name: ara
     state: restarted
-  become: true
+  when: ara.deployment.server == 'embedded' or
+        ara.deployment.server == 'nginx' and ara.deployment.type == 'embedded_proxy'
