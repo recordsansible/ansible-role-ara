@@ -1,9 +1,8 @@
 - name: Install required dependencies for mod_wsgi
   become: true
   package:
-    name: "{{ item }}"
+    name: "{{ required_wsgi_packages }}"
     state: "present"
-  with_items: "{{ required_wsgi_packages }}"
 
 - name: Set selinux boolean to allow Apache to manage the files
   become: true
