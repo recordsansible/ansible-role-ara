@@ -1,0 +1,62 @@
+- name: Install required dependencies for mod_wsgi
+  become: true
+  package:
+    name: "{{ item }}"
+    state: "present"
+  with_items: "{{ required_wsgi_packages }}"
+
+- name: Get status of selinux
+  become: true
+  command: getenforce
+  register: selinux_status
+  when: ansible_os_family == "RedHat"
+
+- name: Set selinux boolean to allow Apache to manage the files
+  become: true
+  seboolean:
+    name: httpd_unified
+    state: yes
+  when:
+    - ansible_os_family == "RedHat"
+    - selinux_status.stdout == "Enforcing"
+
+- name: Add the Apache user to the ARA group
+  become: true
+  user:
+    name: "{{ apache_user }}"
+    groups: ara
+    append: yes
+
+- name: Get the location of the WSGI script
+  command: which ara-wsgi
+  register: wsgi_location
+  changed_when: false
+
+- name: Set the location of the WSGI script
+  set_fact:
+    wsgi_script: "{{ wsgi_location.stdout }}"
+
+- name: Set up Apache configuration
+  become: true
+  template:
+    src: apache_mod_wsgi.conf.j2
+    dest: "{{ apache_config_path }}/ara.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart apache
+
+- name: Ensure Apache server is started
+  become: true
+  systemd:
+    state: started
+    name: "{{ apache_service }}"
+    enabled: true
+
+- name: Ensure the configuration is enabled
+  become: true
+  command: a2ensite ara
+  when: ansible_os_family == "Debian"
+  notify:
+    - restart apache

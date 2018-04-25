@@ -20,48 +20,84 @@
     - "{{ ansible_os_family }}.yml"
 
 - name: Install required dependencies
+  become: true
   package:
     name: "{{ item }}"
     state: "present"
   with_items: "{{ required_packages }}"
-  become: true
 
 - name: Install pip
+  become: true
   easy_install:
     name: pip
     state: present
-  become: true
 
 - name: Install ARA with pip
+  become: true
   pip:
     name: ara
     state: present
+
+- name: Create user for ARA
   become: true
+  user:
+    name: ara
+    comment: User for ARA Records Ansible
+    shell: /sbin/nologin
+    home: /var/lib/ara
 
-- include_tasks: apache_server.yml
-  when: use_apache_server
+- name: Create ARA directories
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: ara
+    group: ara
+    mode: 0750
+  with_items:
+    - /var/log/ara
+    - /var/lib/ara
+    - /etc/ara
 
-- include_tasks: embedded_server.yaml
-  when: not use_apache_server
+- name: Create the ARA configuration file
+  become: true
+  ini_file:
+    path: /etc/ara/ara.cfg
+    section: ara
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    create: yes
+    owner: ara
+    group: ara
+    mode: 0640
+  with_dict: "{{ ara.config }}"
+  notify:
+    - restart ara
 
 - name: Get ARA installed location
   shell: python -c "import os,ara; print(os.path.dirname(ara.__file__))"
   register: ara_location
   changed_when: false
 
-- name: Enable ARA callback plugin
-  ini_file:
-    dest: "{{ ara_config_path }}/ansible.cfg"
-    section: defaults
-    option: callback_plugins
-    value: "{{ ara_location.stdout }}/plugins/callbacks"
+- name: Enable ARA Ansible configuration
   become: true
+  ini_file:
+    dest: /etc/ara/ara.cfg
+    section: defaults
+    option: "{{ item.option }}"
+    value: "{{ ara_location.stdout }}/{{ item.value }}"
+  with_items:
+    - { option: callback_plugins, value: plugins/callbacks }
+    - { option: action_plugins, value: plugins/actions }
+
+- name: Include web server configuration
+  include_tasks: "{{ ara.deployment.server }}/{{ ara.deployment.type }}.yml"
 
 - name: Provide web application URL
   vars:
     msg: >-
       ARA was installed succesfully !
-      The web application should now be reachable at http://{{ ara_host }}:{{ ara_port }} !
+      The web application should now be reachable at http://{{ ara.config.host }}:{{ ara.config.port }} !
       To customize the host and port on which the application listens to, override the defaults for the ara_host and ara_port variables.
       Data from recorded playbooks will be available in the interface as soon as you run your first ansible-playbook command.
   debug:
@@ -70,10 +106,11 @@
 - name: Provide instructions
   vars:
     msg: >-
-      We've set up an ansible.cfg file for you inside {{ ara_config_path }}.
-      Make sure to have Ansible and ARA use it for everything to work properly.
+      We've set up a configuration file for you in /etc/ara/ara.cfg.
+      The ARA service is already using this configuration but you'll need to make sure Ansible is using it so that Ansible knows where ARA is located.
 
       This can be done from using Ansible or the ARA CLI commands directly from that directory or by using the ANSIBLE_CONFIG environment variable, like so:
-      export ANSIBLE_CONFIG={{ ara_config_path }}/ansible.cfg
+      export ANSIBLE_CONFIG=/etc/ara/ara.cfg
+      ansible-playbook playbook.yml
   debug:
     msg: "{{ msg.split('\n') }}"
