@@ -5,20 +5,12 @@
     state: "present"
   with_items: "{{ required_wsgi_packages }}"
 
-- name: Get status of selinux
-  become: true
-  command: getenforce
-  register: selinux_status
-  when: ansible_os_family == "RedHat"
-
 - name: Set selinux boolean to allow Apache to manage the files
   become: true
   seboolean:
     name: httpd_unified
     state: yes
-  when:
-    - ansible_os_family == "RedHat"
-    - selinux_status.stdout == "Enforcing"
+  when: ansible_os_family == "RedHat"
 
 - name: Get the location of the WSGI script
   command: which ara-wsgi
