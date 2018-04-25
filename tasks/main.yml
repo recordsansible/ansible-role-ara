@@ -65,6 +65,9 @@
     src: logrotate.conf.j2
     dest: /etc/logrotate.d/ara
 
+- name: Include web server configuration
+  include_tasks: "{{ ara.deployment.server }}/{{ ara.deployment.type }}.yml"
+
 - name: Create the ARA configuration file
   become: true
   ini_file:
@@ -79,6 +82,7 @@
   with_dict: "{{ ara.config }}"
   notify:
     - restart ara
+    - restart nginx
 
 - name: Get ARA installed location
   shell: python -c "import os,ara; print(os.path.dirname(ara.__file__))"
@@ -96,27 +100,26 @@
     - { option: callback_plugins, value: plugins/callbacks }
     - { option: action_plugins, value: plugins/actions }
 
-- name: Include web server configuration
-  include_tasks: "{{ ara.deployment.server }}/{{ ara.deployment.type }}.yml"
-
 - name: Provide web application URL
   vars:
     msg: >-
       ARA was installed succesfully !
-      The web application should now be reachable at http://{{ ara.config.host }}:{{ ara.config.port }} !
-      To customize the host and port on which the application listens to, override the defaults for the ara_host and ara_port variables.
-      Data from recorded playbooks will be available in the interface as soon as you run your first ansible-playbook command.
+      The web application should now be reachable at http://{{ ara.config.host_proxy | default(ara.config.host) }}:{{ ara.config.port_proxy | default(ara.config.port) }} !
   debug:
     msg: "{{ msg.split('\n') }}"
 
 - name: Provide instructions
   vars:
     msg: >-
-      We've set up a configuration file for you in /etc/ara/ara.cfg.
-      The ARA service is already using this configuration but you'll need to make sure Ansible is using it so that Ansible knows where ARA is located.
+      To customize the host and port on which the web application is served, supply an 'ara_override' dictionary variables with new host and port keys.
 
-      This can be done from using Ansible or the ARA CLI commands directly from that directory or by using the ANSIBLE_CONFIG environment variable, like so:
-      export ANSIBLE_CONFIG=/etc/ara/ara.cfg
-      ansible-playbook playbook.yml
+      A configuration file was set up automatically in /etc/ara/ara.cfg.
+      The ARA service is already using this configuration file but you'll need to make sure Ansible is using it so that Ansible knows where ARA is located.
+
+      This can be done by exporting the ANSIBLE_CONFIG environment variable, like so:
+      $ export ANSIBLE_CONFIG=/etc/ara/ara.cfg
+      $ ansible-playbook playbook.yml
+
+      Data from recorded playbooks will be available in the interface as soon as you run your first ansible-playbook command.
   debug:
     msg: "{{ msg.split('\n') }}"
