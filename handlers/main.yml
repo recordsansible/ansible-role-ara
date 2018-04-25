@@ -13,8 +13,18 @@
 #   License for the specific language governing permissions and limitations
 #   under the License.
 
+- name: reload systemctl daemon
+  systemd:
+    daemon_reload: yes
+
 - name: restart apache
   service:
    name: "{{ apache_service }}"
-   state: "restarted"
+   state: restarted
+  become: true
+
+- name: restart ara
+  service:
+    name: ara
+    state: restarted
   become: true
