@@ -59,6 +59,12 @@
     - /var/lib/ara
     - /etc/ara
 
+- name: Setup ARA logrotate
+  become: true
+  template:
+    src: logrotate.conf.j2
+    path: /etc/logrotate.d/ara
+
 - name: Create the ARA configuration file
   become: true
   ini_file:
