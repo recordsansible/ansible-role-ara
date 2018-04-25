@@ -23,6 +23,12 @@
    state: restarted
   become: true
 
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted
+  become: true
+
 - name: restart ara
   service:
     name: ara

@@ -1,0 +1,46 @@
+# This is designed to be as little invasive as possible since the user might
+# already be installing and configuring nginx.
+
+- when: ansible_os_family == 'RedHat'
+  block:
+    - name: Ensure EPEL is installed on RedHat distributions
+      package:
+        name: epel-release
+        state: installed
+
+    - name: Ensure the EPEL repository is enabled
+      ini_file:
+        path: /etc/yum.repos.d/epel.repo
+        section: epel
+        option: enabled
+        value: 1
+      register: epel_state
+
+- name: Install nginx
+  package:
+    name: nginx
+    state: installed
+
+# We don't want to leave EPEL enabled if it was disabled to begin with
+- name: Disable EPEL on Red Hat distributions if it was disabled
+  ini_file:
+    path: /etc/yum.repos.d/epel.repo
+    section: epel
+    option: enabled
+    value: 0
+  when:
+    - ansible_os_family == 'RedHat'
+    - epel_state is changed
+
+- name: Ensure nginx is started and enabled
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Create the nginx cache directory
+  file:
+    path: "{{ ara.deployment.nginx.cache_directory }}"
+    state: directory
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_group }}"
