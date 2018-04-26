@@ -35,9 +35,8 @@ Using the role
 --------------
 
 The default parameters of the role will install ARA and configure a persistent
-systemd service to run the embedded development server:
+systemd service to run the embedded development server::
 
-::
     mkdir roles
     git clone https://git.openstack.org/openstack/ansible-role-ara roles/ara
     cat << EOF > playbook.yml
