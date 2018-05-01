@@ -29,8 +29,10 @@ ara:
     dir: /var/lib/ara
     # Path to the logging configuration
     logconfig: /etc/ara/logging.yml
-    # Where logs are located
-    logfile: /var/log/ara/ara.log
+    # Path where logs are stored
+    logdir: /var/log/ara
+    # Name of the log file
+    logfile: ara.log
   deployment:
     # Server (apache, embedded, nginx)
     server: embedded
