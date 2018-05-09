@@ -46,6 +46,7 @@
   pip:
     name: ara
     state: present
+    virtualenv: "{{ virtualenv | bool | ternary(virtualenv_path, omit) }}"
 
 - name: Create user for ARA
   become: true
@@ -92,6 +93,14 @@
   notify:
     - restart ara
     - restart nginx
+
+# TODO: Clean this up
+- name: Get ARA's installed location from a virtualenv
+  shell: |
+    {{ virtualenv_path }}/bin/python -c "import os,ara; print(os.path.dirname(ara.__file__))"
+  register: ara_location
+  changed_when: false
+  when: virtualenv | bool
 
 - name: Get ARA installed location
   shell: python -c "import os,ara; print(os.path.dirname(ara.__file__))"
