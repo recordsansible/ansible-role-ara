@@ -18,4 +18,8 @@
     WSGIApplicationGroup %{GLOBAL}
 
     SetEnv ANSIBLE_CONFIG /etc/ara/ara.cfg
+    {% if ara.params.virtualenv -%}
+    SetEnv ARA_WSGI_USE_VIRTUALENV 1
+    SetEnv ARA_WSGI_VIRTUALENV_PATH {{ ara.params.virtualenv_path }}
+    {% fi -%}
 </VirtualHost>
