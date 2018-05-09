@@ -5,17 +5,23 @@
     LogLevel warn
     CustomLog {{ apache_log_path }}/ara-access.log combined
 
+    SetEnv ANSIBLE_CONFIG /etc/ara/ara.cfg
+    {% if ara.params.virtualenv -%}
+    SetEnv ARA_WSGI_USE_VIRTUALENV 1
+    SetEnv ARA_WSGI_VIRTUALENV_PATH {{ ara.params.virtualenv_path }}
+
+    WSGIDaemonProcess ara user=ara group=ara processes=1 threads=4 python-home={{ ara.params.virtualenv_path }}
+    {% else -%}
+    WSGIDaemonProcess ara user=ara group=ara processes=1 threads=4
+    {% endif -%}
+    WSGIScriptAlias {{ ara.config.application_root }} {{ wsgi_script }}
+    WSGIProcessGroup ara
+    WSGIApplicationGroup %{GLOBAL}
+
     <Directory "{{ wsgi_script | dirname }}">
         <Files "ara-wsgi">
             Allow from all
             Satisfy Any
         </Files>
     </Directory>
-
-    WSGIDaemonProcess ara user=ara group=ara processes=1 threads=4
-    WSGIScriptAlias {{ ara.config.application_root }} {{ wsgi_script }}
-    WSGIProcessGroup ara
-    WSGIApplicationGroup %{GLOBAL}
-
-    SetEnv ANSIBLE_CONFIG /etc/ara/ara.cfg
 </VirtualHost>
