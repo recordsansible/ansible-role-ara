@@ -17,6 +17,11 @@
 #  along with ARA.  If not, see <http://www.gnu.org/licenses/>.
 
 ara:
+  params:
+    # If ARA should be installed inside a virtualenv
+    virtualenv: true
+    # Location where the virtualenv should be installed
+    virtualenv_path: /opt/ara-venv
   config:
     database: "sqlite:////var/lib/ara/ansible.sqlite"
     # Host to listen on for embedded server, apache or nginx
