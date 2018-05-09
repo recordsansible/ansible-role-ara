@@ -24,6 +24,7 @@ required_packages:
   - libxslt-dev
   - python-dev
   - python-setuptools
+  - python-virtualenv
   - which
 
 required_wsgi_packages:
