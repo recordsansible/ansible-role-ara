@@ -41,11 +41,26 @@
     name: pip
     state: present
 
+# Need to make sure setuptools is up to date
+- name: Initialize virtualenv with up-to-date setuptools
+  become: true
+  pip:
+    name: setuptools
+    state: latest
+    virtualenv: "{{ ara.params.virtualenv_path }}"
+  when: ara.params.virtualenv | bool
+
 - name: Install ARA with pip
   become: true
   pip:
     name: ara
     state: present
+    virtualenv: "{{ ara.params.virtualenv | bool | ternary(ara.params.virtualenv_path, omit) }}"
+
+- name: Set up virtualenv bin path
+  set_fact:
+    virtualenv_path: "{{ ara.params.virtualenv_path }}/bin:{{ ansible_env.PATH }}"
+  when: ara.params.virtualenv | bool
 
 - name: Create user for ARA
   become: true
@@ -93,8 +108,10 @@
     - restart ara
     - restart nginx
 
-- name: Get ARA installed location
-  shell: python -c "import os,ara; print(os.path.dirname(ara.__file__))"
+- name: Get ARA's installed location
+  command: python -m ara.setup.path
+  environment:
+    PATH: "{{ virtualenv_path | default(omit) }}"
   register: ara_location
   changed_when: false
 

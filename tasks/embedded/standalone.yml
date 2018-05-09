@@ -18,6 +18,8 @@
 
 - name: Get the location of ara-manage
   command: which ara-manage
+  environment:
+    PATH: "{{ virtualenv_path | default(omit) }}"
   register: ara_manage
   changed_when: false
 

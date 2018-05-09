@@ -31,6 +31,8 @@
 
 - name: Get the location of the WSGI script
   command: which ara-wsgi
+  environment:
+    PATH: "{{ virtualenv_path | default(omit) }}"
   register: wsgi_location
   changed_when: false
 
