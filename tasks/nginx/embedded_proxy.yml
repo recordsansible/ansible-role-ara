@@ -28,7 +28,7 @@
   set_fact:
     ara: "{{ ara | combine(override, recursive=true) }}"
 
-- name: Install the embedded server service
+- name: Ensure the embedded server service is running
   include_tasks: ../embedded/standalone.yml
 
 - name: Set selinux boolean to allow nginx to reverse proxy
