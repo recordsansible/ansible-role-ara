@@ -25,6 +25,7 @@ required_packages:
   - openssl-devel
   - python-devel
   - python-setuptools
+  - python-virtualenv
   - redhat-rpm-config
   - which
 
