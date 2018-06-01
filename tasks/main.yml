@@ -29,38 +29,8 @@
     - ara_override is defined
     - ara_override is mapping
 
-- name: Install required dependencies
-  become: true
-  package:
-    name: "{{ required_packages }}"
-    state: "present"
-
-- name: Install pip
-  become: true
-  easy_install:
-    name: pip
-    state: present
-
-# Need to make sure setuptools is up to date
-- name: Initialize virtualenv with up-to-date setuptools
-  become: true
-  pip:
-    name: setuptools
-    state: latest
-    virtualenv: "{{ ara.params.virtualenv_path }}"
-  when: ara.params.virtualenv | bool
-
-- name: Install ARA with pip
-  become: true
-  pip:
-    name: ara
-    state: present
-    virtualenv: "{{ ara.params.virtualenv | bool | ternary(ara.params.virtualenv_path, omit) }}"
-
-- name: Suffix the virtualenv bin directory to PATH
-  set_fact:
-    path_with_virtualenv: "{{ ara.params.virtualenv_path }}/bin:{{ ansible_env.PATH }}"
-  when: ara.params.virtualenv | bool
+- name: Include ARA installation
+  include_tasks: "install/{{ ara.params.install.method }}.yml"
 
 - name: Create user for ARA
   become: true
