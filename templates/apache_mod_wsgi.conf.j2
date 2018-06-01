@@ -6,11 +6,11 @@
     CustomLog {{ apache_log_path }}/ara-access.log combined
 
     SetEnv ANSIBLE_CONFIG /etc/ara/ara.cfg
-    {% if ara.params.virtualenv -%}
+    {% if ara.params.install.pip.virtualenv -%}
     SetEnv ARA_WSGI_USE_VIRTUALENV 1
-    SetEnv ARA_WSGI_VIRTUALENV_PATH {{ ara.params.virtualenv_path }}
+    SetEnv ARA_WSGI_VIRTUALENV_PATH {{ ara.params.install.pip.virtualenv_path }}
 
-    WSGIDaemonProcess ara user=ara group=ara processes=1 threads=4 python-home={{ ara.params.virtualenv_path }}
+    WSGIDaemonProcess ara user=ara group=ara processes=1 threads=4 python-home={{ ara.params.install.pip.virtualenv_path }}
     {% else -%}
     WSGIDaemonProcess ara user=ara group=ara processes=1 threads=4
     {% endif -%}

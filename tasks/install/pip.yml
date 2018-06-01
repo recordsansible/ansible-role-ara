@@ -1,0 +1,61 @@
+---
+#  Copyright (c) 2018 Red Hat, Inc.
+#
+#  This file is part of ARA Records Ansible.
+#
+#  ARA is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  ARA is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with ARA.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: Install required dependencies
+  become: true
+  package:
+    name: "{{ required_packages }}"
+    state: "present"
+
+# Debian/Ubuntu has a package for python-pip, RHEL and CentOS do not.
+# TODO: Fedora actually has a package for python-pip.
+- name: Install pip for Red Hat distributions
+  become: true
+  easy_install:
+    name: pip
+    state: present
+
+# Need to make sure setuptools is up to date
+- name: Initialize virtualenv with up-to-date setuptools
+  become: true
+  pip:
+    name: setuptools
+    state: latest
+    virtualenv: "{{ ara.params.install.pip.virtualenv_path }}"
+  when: ara.params.install.pip.virtualenv | bool
+
+- name: Install ARA with pip
+  become: true
+  vars:
+    # Manage that the 'version' argument doesn't work when installing from source
+    pkg_name: |
+      {%- if ara.params.install.pip.method == 'source' -%}
+      {{- ara.params.install.pip.source }}@{{ ara.params.install.pip.version | default('master') -}}
+      {%- else -%}
+      ara
+      {%- endif -%}
+  pip:
+    name: "{{ pkg_name }}"
+    version: "{{ ara.params.install.pip.version | default(omit, True) }}"
+    state: present
+    virtualenv: "{{ ara.params.install.pip.virtualenv | bool | ternary(ara.params.install.pip.virtualenv_path, omit) }}"
+
+- name: Suffix the virtualenv bin directory to PATH
+  set_fact:
+    path_with_virtualenv: "{{ ara.params.install.pip.virtualenv_path }}/bin:{{ ansible_env.PATH }}"
+  when: ara.params.install.pip.virtualenv | bool
