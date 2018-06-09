@@ -113,7 +113,7 @@
 - name: Provide web application URL
   vars:
     msg: >-
-      ARA was installed succesfully !
+      ARA was installed successfully !
       The web application should now be reachable at http://{{ ara.config.host_proxy | default(ara.config.host) }}:{{ ara.config.port_proxy | default(ara.config.port) }} !
   debug:
     msg: "{{ msg.split('\n') }}"
