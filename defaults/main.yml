@@ -17,24 +17,23 @@
 #  along with ARA.  If not, see <http://www.gnu.org/licenses/>.
 
 ara:
-  params:
-    install:
-      # The method used to install ARA ('pip' or 'distribution')
-      method: pip
-      pip:
-        # If ARA should be installed inside a virtualenv
-        virtualenv: true
-        # Location where the virtualenv should be installed
-        virtualenv_path: /opt/ara-venv
-        # Method to install ARA with pip ('pypi' or 'source')
-        method: pypi
-        # When installing from source, location of the repository
-        # When installing from a source on the filesystem, only specify the path to the repository
-        source: git+https://git.openstack.org/openstack/ara
-        # When installing from pypi, version to install (ex: '0.15.0')
-        # When installing from source, ref to the commit, tag or branch to install
-        # Defaults to the latest version on PyPi or the master branch when installing from source
-        version:
+  install:
+    # The method used to install ARA ('pip' or 'distribution')
+    method: pip
+    pip:
+      # If ARA should be installed inside a virtualenv
+      virtualenv: true
+      # Location where the virtualenv should be installed
+      virtualenv_path: /opt/ara-venv
+      # Method to install ARA with pip ('pypi' or 'source')
+      method: pypi
+      # When installing from source, location of the repository
+      # When installing from a source on the filesystem, only specify the path to the repository
+      source: git+https://git.openstack.org/openstack/ara
+      # When installing from pypi, version to install (ex: '0.15.0')
+      # When installing from source, ref to the commit, tag or branch to install
+      # Defaults to the latest version on PyPi or the master branch when installing from source
+      version:
   config:
     database: "sqlite:////var/lib/ara/ansible.sqlite"
     # Host to listen on for embedded server, apache or nginx

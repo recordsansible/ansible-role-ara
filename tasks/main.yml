@@ -30,7 +30,7 @@
     - ara_override is mapping
 
 - name: Include ARA installation
-  include_tasks: "install/{{ ara.params.install.method }}.yml"
+  include_tasks: "install/{{ ara.install.method }}.yml"
 
 - name: Create user for ARA
   become: true

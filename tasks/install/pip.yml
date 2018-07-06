@@ -36,26 +36,26 @@
   pip:
     name: setuptools
     state: latest
-    virtualenv: "{{ ara.params.install.pip.virtualenv_path }}"
-  when: ara.params.install.pip.virtualenv | bool
+    virtualenv: "{{ ara.install.pip.virtualenv_path }}"
+  when: ara.install.pip.virtualenv | bool
 
 - name: Install ARA with pip
   become: true
   vars:
     # Manage that the 'version' argument doesn't work when installing from source
     pkg_name: |
-      {%- if ara.params.install.pip.method == 'source' and ara.params.install.pip.version -%}
-      {{- ara.params.install.pip.source }}@{{ ara.params.install.pip.version | default('master') -}}
+      {%- if ara.install.pip.method == 'source' and ara.install.pip.version -%}
+      {{- ara.install.pip.source }}@{{ ara.install.pip.version | default('master') -}}
       {%- else -%}
       ara
       {%- endif -%}
   pip:
     name: "{{ pkg_name }}"
-    version: "{{ ara.params.install.pip.version | default(omit, True) }}"
+    version: "{{ ara.install.pip.version | default(omit, True) }}"
     state: present
-    virtualenv: "{{ ara.params.install.pip.virtualenv | bool | ternary(ara.params.install.pip.virtualenv_path, omit) }}"
+    virtualenv: "{{ ara.install.pip.virtualenv | bool | ternary(ara.install.pip.virtualenv_path, omit) }}"
 
 - name: Suffix the virtualenv bin directory to PATH
   set_fact:
-    path_with_virtualenv: "{{ ara.params.install.pip.virtualenv_path }}/bin:{{ ansible_env.PATH }}"
-  when: ara.params.install.pip.virtualenv | bool
+    path_with_virtualenv: "{{ ara.install.pip.virtualenv_path }}/bin:{{ ansible_env.PATH }}"
+  when: ara.install.pip.virtualenv | bool
