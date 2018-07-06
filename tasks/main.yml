@@ -97,20 +97,39 @@
     - { option: callback_plugins, value: "{{ ara_location.stdout }}/plugins/callbacks" }
     - { option: action_plugins, value: "{{ ara_location.stdout }}/plugins/actions" }
 
+- name: Dump the role configuration
+  become: true
+  copy:
+    dest: /etc/ara/ansible-role-ara.yml
+    content: |
+      {{ ara | to_nice_yaml(indent=4) }}
+      {% if ara_override is defined -%}
+      {{ ara_override | to_nice_yaml(indent=4) }}
+      {% endif -%}
+    owner: ara
+    group: ara
+    mode: 0640
+
+- name: Set the web application URL
+  set_fact:
+    webapp_url: "http://{{ ara.config.host_proxy | default(ara.config.host) }}:{{ ara.config.port_proxy | default(ara.config.port) }}"
+
 - name: Provide web application URL
   vars:
     msg: >-
       ARA was installed successfully !
-      The web application should now be reachable at http://{{ ara.config.host_proxy | default(ara.config.host) }}:{{ ara.config.port_proxy | default(ara.config.port) }} !
+      The web application should now be reachable at the following address:
+      {{ webapp_url }}
   debug:
     msg: "{{ msg.split('\n') }}"
 
 - name: Provide instructions
   vars:
     msg: >-
-      To customize the host and port on which the web application is served, supply an 'ara_override' dictionary variables with new host and port keys.
+      You can find the configuration that was used for the execution of this role in /etc/ara/ansible-role-ara.yml.
+      You can edit the configuration and re-run your ansible-playbook command with "--extra-vars @/etc/ara/ansible-role-ara.yml".
 
-      A configuration file was set up automatically in /etc/ara/ara.cfg.
+      A configuration file for Ansible and ARA was set up automatically in /etc/ara/ara.cfg.
       The ARA service is already using this configuration file but you'll need to make sure Ansible is using it so that Ansible knows where ARA is located.
 
       This can be done by exporting the ANSIBLE_CONFIG environment variable, like so:
