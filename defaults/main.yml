@@ -35,6 +35,7 @@ ara:
       # Defaults to the latest version on PyPi or the master branch when installing from source
       version:
   config:
+    # If pymysql or psycopg2 are found in the connection string, the role will install the necessary driver
     database: "sqlite:////var/lib/ara/ansible.sqlite"
     # Host to listen on for embedded server, apache or nginx
     host: 127.0.0.1

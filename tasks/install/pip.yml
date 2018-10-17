@@ -55,6 +55,22 @@
     state: present
     virtualenv: "{{ ara.install.pip.virtualenv | bool | ternary(ara.install.pip.virtualenv_path, omit) }}"
 
+- name: Install pymysql with pip
+  become: true
+  pip:
+    name: pymysql
+    state: present
+    virtualenv: "{{ ara.install.pip.virtualenv | bool | ternary(ara.install.pip.virtualenv_path, omit) }}"
+  when: '"pymysql" in ara.config.database'
+
+- name: Install psycopg2 with pip
+  become: true
+  pip:
+    name: psycopg2
+    state: present
+    virtualenv: "{{ ara.install.pip.virtualenv | bool | ternary(ara.install.pip.virtualenv_path, omit) }}"
+  when: '"psycopg2" in ara.config.database'
+
 - name: Suffix the virtualenv bin directory to PATH
   set_fact:
     path_with_virtualenv: "{{ ara.install.pip.virtualenv_path }}/bin:{{ ansible_env.PATH }}"
