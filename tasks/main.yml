@@ -103,7 +103,7 @@
 - name: Get ARA's installed location
   command: python -m ara.setup.path
   environment:
-    PATH: "{{ path_with_virtualenv | default(omit) }}"
+    PATH: "{{ path_with_virtualenv | default(lookup('env','PATH')) }}"
   register: ara_location
   changed_when: false
 
