@@ -29,6 +29,7 @@
   easy_install:
     name: pip
     state: present
+  when: "ansible_os_family == 'RedHat'"
 
 # Need to make sure setuptools is up to date
 - name: Initialize virtualenv with up-to-date setuptools
