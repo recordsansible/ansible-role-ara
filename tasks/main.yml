@@ -32,6 +32,10 @@
 - name: Include ARA installation
   include_tasks: "install/{{ ara.install.method }}.yml"
 
+- name: Create group for ara user
+  group:
+    name: "{{ ara.config.group }}"
+
 - name: Create user for ARA
   become: true
   user:
