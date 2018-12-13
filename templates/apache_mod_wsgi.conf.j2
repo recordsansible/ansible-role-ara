@@ -10,9 +10,9 @@
     SetEnv ARA_WSGI_USE_VIRTUALENV 1
     SetEnv ARA_WSGI_VIRTUALENV_PATH {{ ara.install.pip.virtualenv_path }}
 
-    WSGIDaemonProcess ara user=ara group=ara processes=1 threads=4 python-home={{ ara.install.pip.virtualenv_path }}
+    WSGIDaemonProcess ara user={{ ara.config.user }} group={{ ara.config.group }} processes=1 threads=4 python-home={{ ara.install.pip.virtualenv_path }}
     {% else -%}
-    WSGIDaemonProcess ara user=ara group=ara processes=1 threads=4
+    WSGIDaemonProcess ara user={{ ara.config.user }} group={{ ara.config.group }} processes=1 threads=4
     {% endif -%}
     WSGIScriptAlias {{ ara.config.application_root }} {{ wsgi_script }}
     WSGIProcessGroup ara

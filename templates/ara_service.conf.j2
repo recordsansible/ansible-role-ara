@@ -9,8 +9,8 @@ TimeoutStartSec=0
 Restart=on-failure
 RestartSec=10
 RemainAfterExit=yes
-User=ara
-Group=ara
+User={{ ara.config.user }}
+Group={{ ara.config.group }}
 Environment=ANSIBLE_CONFIG=/etc/ara/ara.cfg
 ExecStart={{ ara_manage.stdout }} runserver
 
