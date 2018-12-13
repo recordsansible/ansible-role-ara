@@ -51,6 +51,8 @@ ara:
     logdir: /var/log/ara
     # Name of the log file
     logfile: ara.log
+    # User to run ara
+    user: ara
   deployment:
     # Server (apache, embedded, nginx)
     server: embedded

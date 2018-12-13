@@ -35,7 +35,7 @@
 - name: Create user for ARA
   become: true
   user:
-    name: ara
+    name: "{{ ara.config.user }}"
     comment: User for ARA Records Ansible
     shell: /sbin/nologin
     home: /var/lib/ara
@@ -45,8 +45,8 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: ara
-    group: ara
+    owner: "{{ ara.config.user }}"
+    group: "{{ ara.config.user }}"
     mode: 0750
   with_items:
     - /var/log/ara
@@ -92,7 +92,7 @@
     option: "{{ item.key }}"
     value: "{{ item.value }}"
     create: yes
-    owner: ara
+    owner: "{{ ara.config.user }}"
     group: ara
     mode: 0640
   with_dict: "{{ ara.config }}"
