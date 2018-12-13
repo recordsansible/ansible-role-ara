@@ -26,6 +26,7 @@ required_packages:
   - python-setuptools
   - python-virtualenv
   - debianutils
+  - pip
 
 required_wsgi_packages:
   - apache2
