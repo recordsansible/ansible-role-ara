@@ -53,6 +53,8 @@ ara:
     logfile: ara.log
     # User to run ara
     user: ara
+    # ara user default group
+    group: ara
   deployment:
     # Server (apache, embedded, nginx)
     server: embedded

@@ -36,6 +36,7 @@
   become: true
   user:
     name: "{{ ara.config.user }}"
+    group: "{{ ara.config.group }}"
     comment: User for ARA Records Ansible
     shell: /sbin/nologin
     home: /var/lib/ara
@@ -46,7 +47,7 @@
     path: "{{ item }}"
     state: directory
     owner: "{{ ara.config.user }}"
-    group: "{{ ara.config.user }}"
+    group: "{{ ara.config.group }}"
     mode: 0750
   with_items:
     - /var/log/ara
@@ -93,7 +94,7 @@
     value: "{{ item.value }}"
     create: yes
     owner: "{{ ara.config.user }}"
-    group: ara
+    group: "{{ ara.config.group }}"
     mode: 0640
   with_dict: "{{ ara.config }}"
   notify:
@@ -128,8 +129,8 @@
       {% if ara_override is defined -%}
       {{ ara_override | to_nice_yaml(indent=4) }}
       {% endif -%}
-    owner: ara
-    group: ara
+    owner: "{{ ara.config.user }}"
+    group: "{{ ara.config.group }}"
     mode: 0640
 
 - name: Set the web application URL
