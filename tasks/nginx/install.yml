@@ -68,7 +68,8 @@
   lineinfile:
     path: /etc/nginx/nginx.conf
     regexp: '^sites-enabled'
-    line: 'include /etc/nginx/sites-enabled/*;'
+    line: '    include /etc/nginx/sites-enabled/*;'
+    insertafter: '\*\.conf;'
   when: ansible_os_family == 'Debian'
 
 - name: Ensure nginx is started and enabled
