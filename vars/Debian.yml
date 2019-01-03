@@ -40,3 +40,4 @@ apache_config_path: /etc/apache2/sites-available
 nginx_user: www-data
 nginx_group: www-data
 nginx_config_path: /etc/nginx/sites-available
+nginx_config_enabled_path: /etc/nginx/sites-enabled
