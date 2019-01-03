@@ -50,6 +50,33 @@
     - ansible_os_family == 'RedHat'
     - epel_state is changed
 
+# When NGINX doens't come from the native debian repo sites-enabled and sites-available do not exist.
+# Recreate this convention and add it to nginx.conf.
+- name: Ensure nginx config path exists on Debian-like systems (for non-maintainer nginx package)
+  file:
+    path: "{{ nginx_config_path }}"
+    state: directory
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure nginx config_enabled path exists on Debian-like systems (for non-maintainer nginx package)
+  file:
+    path: "{{ nginx_config_enabled_path }}"
+    state: directory
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure nginx config path exists on Debian-like systems (for non-ubuntu nginx package)
+  lineinfile:
+    path: /etc/nginx/nginx.conf
+    regexp: '^sites-enabled'
+    line: 'include /etc/nginx/sites-enabled/*;'
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure nginx is started and enabled
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+
 - name: Ensure nginx is started and enabled
   service:
     name: nginx
