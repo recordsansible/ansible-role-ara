@@ -52,7 +52,7 @@
 - name: Enable the nginx configuration on Debian-like systems
   file:
     src: "{{ nginx_config_path }}/ara.conf"
-    dest: /etc/nginx/sites-enabled/ara.conf
+    dest: "{{ nginx_config_enabled_path}}/ara.conf"
     state: link
   when: ansible_os_family == 'Debian'
   notify:
