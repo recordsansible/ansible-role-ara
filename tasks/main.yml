@@ -42,7 +42,7 @@
     name: "{{ ara.config.user }}"
     group: "{{ ara.config.group }}"
     comment: User for ARA Records Ansible
-    shell: /sbin/nologin
+    shell: "{{ ara.config.shell }}"
     home: "{{ ara.config.dir }}"
 
 - name: Create ARA directories

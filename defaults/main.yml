@@ -53,6 +53,8 @@ ara:
     logfile: ara.log
     # User to run ara
     user: ara
+    # Shell for ara user account
+    shell: /sbin/nologin
     # ara user default group
     group: ara
   deployment:
